@@ -1,48 +1,41 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import styled from 'styled-components'
 import {selectMovies} from '../features/movie/movieSlice'; 
 import {useSelector} from 'react-redux';
+import firebase from '../firebase'
+import { Link } from 'react-router-dom';
 
-function Movies() {
+function Movies(props) {
     const IMGPATH = "https://image.tmdb.org/t/p/w1280";
-    const movies = useSelector(selectMovies);
+    // const movies = useSelector(selectMovies);
+    // console.log('this is the movies list', movies);
+    const [movieList,setMovieList] = useState();
 
-    console.log('this are movies', movies);
+    useEffect(() => {
+      const movieRef = firebase.database().ref('Movie');
+      movieRef.on('value',(snapshot) => {
+        const movieList = [];
+        const results = snapshot.val(); 
+        for(let id in results){
+          movieList.push(results[id]);
+        }
+        // console.log(movieList);
+        setMovieList(movieList);
+      });
+    },[])
 
     return (
       <Container>
         <h4>Recommended for You</h4>
         <Content>
-          {movies &&
-            movies.map((movie) => (
+          {movieList &&
+            movieList.map((movie) => (
               <Wrap key={movie.id}>
-                <img src={IMGPATH + movie.poster_path} alt="movie image" />
+                <Link to={`/detail/${movie.id}`}>
+                  <img src={IMGPATH + movie.poster_path} alt="poster image" />
+                </Link>
               </Wrap>
             ))}
-
-          {/* <Wrap>
-            <img src="/images/login-background.jpg" alt="movie image" />
-          </Wrap>
-          <Wrap>
-            <img src="/images/login-background.jpg" alt="movie image" />
-          </Wrap>
-          <Wrap>
-            <img src="/images/login-background.jpg" alt="movie image" />
-          </Wrap>
-        </Content>
-        <Content>
-          <Wrap>
-            <img src="/images/login-background.jpg" alt="movie image" />
-          </Wrap>
-          <Wrap>
-            <img src="/images/login-background.jpg" alt="movie image" />
-          </Wrap>
-          <Wrap>
-            <img src="/images/login-background.jpg" alt="movie image" />
-          </Wrap>
-          <Wrap>
-            <img src="/images/login-background.jpg" alt="movie image" />
-          </Wrap> */}
         </Content>
       </Container>
     );
